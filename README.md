@@ -1,6 +1,6 @@
 # Scan2Shop
 
-A native Android app to compare prices across shops while you're out — scan a barcode, check the price, avoid walking store to store.
+A native Android shopping list app for Zimbabwe. Build your shopping list, scan barcodes to compare prices across nearby stores, and see which store is cheapest for what's on your list — no more walking around town checking prices by hand.
 
 **Prerequisites:** [Android Studio](https://developer.android.com/studio)
 
