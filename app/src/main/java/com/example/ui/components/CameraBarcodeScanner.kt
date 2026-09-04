@@ -16,14 +16,10 @@ import androidx.camera.view.PreviewView
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -36,7 +32,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -197,7 +192,7 @@ fun CameraBarcodeScanner(
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                "Scan2Shop requires camera access to read product barcodes. You can grant access physically, or use the convenient scanner simulation and manual input below.",
+                                "Scan2Shop needs camera access to read product barcodes.",
                                 fontSize = 14.sp,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 textAlign = TextAlign.Center
@@ -214,134 +209,9 @@ fun CameraBarcodeScanner(
                     }
                 }
             }
-
-            // --- Interactive Simulator Section for Emulator Stability (Objective 4.2 & Emulator Testing) ---
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                tonalElevation = 8.dp,
-                shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
-                color = MaterialTheme.colorScheme.surface
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
-                        .verticalScroll(rememberScrollState())
-                ) {
-                    Text(
-                        "Low-Light or Emulator Simulator",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    )
-
-                    // Manual UPC Entry Section (4.2 Manual input)
-                    var manualUpc by remember { mutableStateOf("") }
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        OutlinedTextField(
-                            value = manualUpc,
-                            onValueChange = { manualUpc = it },
-                            placeholder = { Text("E.g., 0111100223, 0333831201") },
-                            label = { Text("Manual Barcode UPC/EAN Input") },
-                            singleLine = true,
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                            modifier = Modifier
-                                .weight(1f)
-                                .testTag("manual_upc_input"),
-                            shape = RoundedCornerShape(8.dp),
-                            trailingIcon = {
-                                if (manualUpc.isNotEmpty()) {
-                                    IconButton(onClick = { manualUpc = "" }) {
-                                        Icon(Icons.Default.Clear, contentDescription = "Clear")
-                                    }
-                                }
-                            }
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Button(
-                            onClick = {
-                                if (manualUpc.isNotBlank()) {
-                                    viewModel.processBarcodeScan(
-                                        barcode = manualUpc,
-                                        onProductFound = onProductFound,
-                                        onProductNotFound = onNewProductBarcode
-                                    )
-                                }
-                            },
-                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-                            shape = RoundedCornerShape(8.dp),
-                            modifier = Modifier
-                                .height(56.dp)
-                                .testTag("manual_upc_btn")
-                        ) {
-                            Text("GO")
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    Text(
-                        "Tap a quick-scanned preset to simulate local feed:",
-                        fontSize = 11.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Spacer(modifier = Modifier.height(6.dp))
-
-                    // Preset Quick Tabs Rows
-                    val presets = listOf(
-                        BarcodePreset("Organic Whole Milk", "0111100223", "🥛"),
-                        BarcodePreset("Avocados", "0333831201", "🥑"),
-                        BarcodePreset("Honeycrisp Apples", "0444928127", "🍎"),
-                        BarcodePreset("Greek Yogurt", "0222238471", "🥣"),
-                        BarcodePreset("Organic Bananas", "0555123456", "🍌"),
-                        BarcodePreset("Sourdough Bread", "0666123456", "🥖")
-                    )
-
-                    LazyRow(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        items(presets) { preset ->
-                            Card(
-                                modifier = Modifier
-                                    .clickable {
-                                        viewModel.processBarcodeScan(
-                                            barcode = preset.barcode,
-                                            onProductFound = onProductFound,
-                                            onProductNotFound = onNewProductBarcode
-                                        )
-                                    }
-                                    .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f), RoundedCornerShape(8.dp)),
-                                colors = CardDefaults.cardColors(
-                                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
-                                ),
-                                shape = RoundedCornerShape(8.dp)
-                            ) {
-                                Row(
-                                    modifier = Modifier.padding(vertical = 8.dp, horizontal = 12.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text(preset.emoji, fontSize = 16.sp)
-                                    Spacer(modifier = Modifier.width(6.dp))
-                                    Column {
-                                        Text(preset.name, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                                        Text("UPC: ${preset.barcode}", fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
         }
     }
 }
-
-data class BarcodePreset(val name: String, val barcode: String, val emoji: String)
 
 @OptIn(ExperimentalGetImage::class)
 @Composable
@@ -350,7 +220,14 @@ fun CameraXPreview(
     onBarcodeScanned: (String) -> Unit
 ) {
     val lifecycleOwner = LocalLifecycleOwner.current
-    val previewView = remember { PreviewView(context) }
+    val previewView = remember {
+        PreviewView(context).apply {
+            // SurfaceView-backed PERFORMANCE mode (the default) can't be animated or
+            // composited, and this screen is shown via AnimatedVisibility's slide/fade —
+            // that combination renders as a permanently black preview.
+            implementationMode = PreviewView.ImplementationMode.COMPATIBLE
+        }
+    }
     val cameraExecutor: ExecutorService = remember { Executors.newSingleThreadExecutor() }
 
     // State to debounce/throttled scans and avoid overlapping alerts
